@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<group>
+	<scale>5</scale>
+	<Threshold>1</Threshold>
+	<blurSize>2</blurSize>
+	<WireFrame>0</WireFrame>
+</group>

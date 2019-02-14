@@ -9,11 +9,10 @@ void ofApp::setup(){
     onePassFbo.allocate(ofGetWidth(), ofGetHeight());
     twoPassFbo.allocate(ofGetWidth(), ofGetHeight());
     
-    vboMesh = ofSpherePrimitive(200, 100).getMesh();
+    vboMesh = ofIcoSpherePrimitive(200, 5).getMesh();
     for(int i=0; i<vboMesh.getVertices().size(); i++) {
         vboMesh.addColor(ofFloatColor(1.0, 1.0, 1.0, 1.0));
     }
-    vboMesh.setMode(OF_PRIMITIVE_TRIANGLES);
     
     boxelShader.load("shader/boxel.vert", "shader/boxel.frag", "shader/boxel.geom");
     boxelShader.setGeometryInputType(GL_POINTS);
@@ -35,14 +34,14 @@ void ofApp::setup(){
 void ofApp::update(){
     renderFbo.begin();
     
-    ofBackground(0);
+    ofBackground(50);
     
     cam.begin();
     
     ofEnableDepthTest();
     
     ofMatrix4x4 modelMatrix;
-    modelMatrix.translate(0, 0, 0);
+    modelMatrix.translate(-400, -300, 100);
     modelMatrix.rotate(ofGetElapsedTimef() * 20.0, 1.0, 1.0, 0.0);
     
     ofMatrix4x4 viewMatrix;
@@ -60,18 +59,34 @@ void ofApp::update(){
     boxelShader.setUniform1f("scale", boxelScale);
     boxelShader.setUniformMatrix4f("modelViewProjectionMatrix", mvpMatrix);
     boxelShader.setUniformMatrix4f("invMatrix", invMatrix);
+    boxelShader.setUniform3f("inColor", .4,.2,.6);
+    boxelShader.setUniform3f("outColor", .7,.2,.1);
+    boxelShader.setUniform3f("spColor", 0.0, 0.0, 0.0);
     boxelShader.setUniform1f("time", ofGetElapsedTimef());
+    vboMesh.draw();
+    boxelShader.end();
     
-    if(wireFrame){
-        vboMesh.draw(OF_MESH_WIREFRAME);
-    } else {
-        vboMesh.draw();
-    }
+    ofMatrix4x4 modelMatrix2;
+    modelMatrix2.translate(400, 300, -100);
+    modelMatrix2.rotate(ofGetElapsedTimef() * 20.0, -1.0, -1.0, 0.0);
+    mvpMatrix = modelMatrix2 * viewMatrix * projectionMatrix;
+    invMatrix = mvpMatrix.getInverse();
+    boxelShader.begin();
+    boxelShader.setUniform1f("scale", boxelScale);
+    boxelShader.setUniformMatrix4f("modelViewProjectionMatrix", mvpMatrix);
+    boxelShader.setUniformMatrix4f("invMatrix", invMatrix);
+    boxelShader.setUniform3f("inColor", .6,.8,.4);
+    boxelShader.setUniform3f("outColor", .3,.8,.9);
+    boxelShader.setUniform3f("spColor", .3, .3, .3);
+    boxelShader.setUniform1f("time", ofGetElapsedTimef());
+    vboMesh.draw();
     boxelShader.end();
     
     ofDisableDepthTest();
     
     cam.end();
+    
+    ofDrawBitmapString("hoge", 10, 10);
     
     renderFbo.end();
 
