@@ -3,9 +3,10 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 
-#define NUM 30
-#define LIGHT_NUM 10
-#define R 50
+#define NUM 125
+#define LIGHT_NUM 20
+#define R 40
+#define BOX_SIZE 20
 
 class PointLight {
 public:
@@ -72,7 +73,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
     void createGBuffer();
 		
-    ofShader gBufferShader, lightingShader;
+    ofShader gBufferShader, lightingShader, floorShader;
     
     unsigned int gBuffer;
     unsigned int gPosition, gNormal, gColorSpec;

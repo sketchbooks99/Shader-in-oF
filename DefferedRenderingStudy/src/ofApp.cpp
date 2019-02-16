@@ -57,24 +57,35 @@ void ofApp::setup(){
     // gBuffer settings
     createGBuffer();
     
-    gBufferShader.load("shader/gBuffer");
-    lightingShader.load("shader/lighting");
+    gBufferShader.load("shader/gBuffer.vert","shader/gBuffer.frag","shader/gBuffer.geom");
+    lightingShader.load("shader/lighting.vert","shader/lighting.frag");
+//    floorShader.load("shader/floor.vert","shader/floor.frag","shader/floor.geom");
     
     ofLoadImage(normalMap, "image/normal.jpg");
     
-    for(int i=0; i<NUM; i++) {
-        pos[i] = ofVec3f(ofRandom(-R, R), ofRandom(-R, R), ofRandom(-R, R));
+    for(int x=-2; x<=2; x++) {
+        for(int y=-2; y<=2; y++) {
+            for(int z=-2; z<=2; z++) {
+                int index = 25 * (x+2) + 5 * (y+2) + (z+2);
+                cout << index << endl;
+                float xPos = R * x;
+                float yPos = R * y - (R*2 + 10);
+                float zPos = R * z;
+                
+                pos[index] = ofVec3f(xPos,yPos,zPos);
+            }
+        }
     }
     
     for(int i=0; i<LIGHT_NUM; i++) {
-        ofVec3f lightPos = ofVec3f(ofRandom(-R, R), ofRandom(-R, R), ofRandom(-R, R));
+        ofVec3f lightPos = ofVec3f(ofRandom(R*2), ofRandom(R*2+10), ofRandom(R*2));
         light[i].setPosition(lightPos);
         light[i].setColor(ofRandom(1.0), ofRandom(1.0), ofRandom(1.0));
         light[i].setRadius(lightPos.length());
     }
     
-    vboMesh = ofBoxPrimitive(10, 10, 10).getMesh();
-    floor = ofPlanePrimitive(1000, 1000, 10, 10).getMesh();
+    vboMesh = ofBoxPrimitive(BOX_SIZE, BOX_SIZE, BOX_SIZE).getMesh();
+    floor = ofPlanePrimitive(1000, 1000, 50, 50).getMesh();
     
     quad.setMode(OF_PRIMITIVE_TRIANGLE_FAN);
     quad.addVertex(ofVec3f(ofGetWidth(), ofGetHeight(), 0.0));
@@ -93,11 +104,11 @@ void ofApp::setup(){
     gui.add(arrayDebug.setup("Array Debug", false));
     gui.add(lightDistance.set("Light Distance", 100.0, 1.0, 1000.0));
     gui.add(lightIndex.set("Light Index", 0, 0, LIGHT_NUM - 1));
-    gui.add(lightAttenuation.set("Attenuation", 0.01, 0.0, 0.3));
-    gui.add(disCoef.set("Distance Coefficient", 1.0, 0.0, 1.0));
+    gui.add(lightAttenuation.set("Attenuation", 0.005, 0.0, 0.15));
+    gui.add(disCoef.set("Distance Coefficient", 0.5, 0.0, 1.0));
     
 //    cam.setupPerspective(false, 80, 0.1f, 100.0f);
-    cam.setDistance(100.0f);
+    cam.setDistance(200.0f);
 }
 
 //--------------------------------------------------------------
@@ -107,11 +118,11 @@ void ofApp::update(){
     for(int i=0; i<LIGHT_NUM; i++) {
         ofVec3f vel = light[i].getVelocity();
         float r = light[i].getRadius();
-        light[i].setPosition(sin(time * vel.x) * r,cos(time * vel.y) * r, sin(time * vel.z) * r);
+        light[i].setPosition(sin(time * vel.x) * r * 2,cos(time * vel.y) * r * 2 - R * 2, sin(time * vel.z) * r * 2);
     }
     
-    cam.setPosition(sin(time * .3) * R*2, sin(time * .3)*R, cos(time * .3) * R*2);
-    cam.lookAt(ofVec3f(0, 0, 0));
+    cam.setPosition(sin(time * .2) * R*8, -R*3, cos(time * .2) * R*8);
+    cam.lookAt(ofVec3f(0, -R * 2, 0));
     
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
 }
@@ -129,6 +140,7 @@ void ofApp::draw(){
     gBufferShader.setUniformMatrix4f("view", viewMatrix);
     gBufferShader.setUniformMatrix4f("projection", cam.getProjectionMatrix());
     gBufferShader.setUniformTexture("normalMap", normalMap, 0);
+    gBufferShader.setUniform1f("time", ofGetElapsedTimef());
     gBufferShader.setUniform1i("isBump", 1);
     for(int i=0; i<NUM; i++) {
         ofMatrix4x4 modelMatrix;
@@ -138,22 +150,23 @@ void ofApp::draw(){
         vboMesh.draw();
     }
     ofMatrix4x4 modelMatrix;
-    modelMatrix.translate(0, 200, 0);
+//    modelMatrix.translate(0, 200, 0);
     modelMatrix.rotate(90,1,0,0);
     gBufferShader.setUniform1i("isBump", 0);
     gBufferShader.setUniformMatrix4f("model", modelMatrix);
     gBufferShader.setUniform3f("mColor", 1.0, 1.0, 1.0);
+    
     floor.draw();
     
-    for(int i=0; i<LIGHT_NUM; i++) {
-        ofMatrix4x4 modelMatrix;
-        modelMatrix.translate(light[i].getPosition());
-        gBufferShader.setUniform1i("isBump", 0);
-        gBufferShader.setUniformMatrix4f("model", modelMatrix);
-        gBufferShader.setUniform3f("mColor", light[i].getColor());
-        light[i].draw();
-    }
-    
+//    for(int i=0; i<LIGHT_NUM; i++) {
+//        ofMatrix4x4 modelMatrix;
+//        modelMatrix.translate(light[i].getPosition());
+//        gBufferShader.setUniform1i("isBump", 0);
+//        gBufferShader.setUniformMatrix4f("model", modelMatrix);
+//        gBufferShader.setUniform3f("mColor", light[i].getColor());
+//        light[i].draw();
+//    }
+//
     gBufferShader.end();
     
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

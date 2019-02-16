@@ -5,7 +5,7 @@
 int main( ){
     ofGLWindowSettings s;
     s.setGLVersion(3, 3);
-    s.setSize(1024, 768);
+    s.setSize(800, 600);
 //    s.resizable = false;
     ofCreateWindow(s);
 
