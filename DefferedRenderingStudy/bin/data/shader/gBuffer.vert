@@ -22,7 +22,9 @@ out Vertex {
 void main() {
     vec3 newVertex = position.xyz;
     if(isBump == 0) {
-        newVertex.z -= snoise(vec3(position.xyz * 10.0) + time * 0.1) * 20.0;
+        newVertex.z -= snoise(vec3(position.xyz * 5.0) + time * 0.2) * 40.0;
+    } else if(isBump == 1) {
+        newVertex += snoise(vec3(position).xyz + time * 0.1) * normal * 10.0;
     }
     vertex.position = (view * model * vec4(newVertex,1.0)).xyz;
     // vNormal = normalize(view * model * vec4(normal, 1.0)).xyz;

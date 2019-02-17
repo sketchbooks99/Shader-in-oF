@@ -73,6 +73,6 @@ void main() {
         fragColor = vec4(Normal, 1.0);
     }
     else if(debugMode == 3) {
-        fragColor = vec4(Color, 1.0);
+        fragColor = vec4(isCalc);
     }
 }

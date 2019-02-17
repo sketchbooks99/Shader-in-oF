@@ -18,6 +18,7 @@ void main() {
     gPosition = vec4(vPosition, 1.0);
     if(isBump == 1) {
         gNormal = texture(normalMap, vTexCoord);
+        // gNormal = vec4(vNormal, 1.0);
         gColorSpec = vec4(vec3(.0), 1.0);
     } else {
         gNormal = vec4(vNormal, 1.0);

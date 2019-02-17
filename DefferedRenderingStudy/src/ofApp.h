@@ -3,15 +3,15 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 
-#define NUM 125
-#define LIGHT_NUM 20
+#define NUM 1
+#define LIGHT_NUM 40
 #define R 40
 #define BOX_SIZE 20
 
 class PointLight {
 public:
     PointLight() {
-        sphere = ofSpherePrimitive(2, 8);
+        sphere = ofSpherePrimitive(8, 8);
         velocity = ofVec3f(ofRandom(-0.5,0.5),ofRandom(-0.5,0.5),ofRandom(-0.5,0.5));
     }
     
@@ -19,7 +19,17 @@ public:
     void setColor(float r, float g, float b){
         color = ofVec3f(r, g, b);
     }
-    ofVec3f getColor() const { return color; };
+    void setColor(float _color) {
+        color = ofVec3f(_color, _color, _color);
+    }
+    void setGray(float _gray) {
+        gray = _gray;
+    }
+    void setColor(ofVec3f _color) {
+        color = _color;
+    }
+    ofVec3f getColor() const { return color; }
+    float getGray() const { return gray; }
     
     // position
     void setPosition(float x, float y, float z){
@@ -41,12 +51,13 @@ public:
     float getRadius() const { return radius; }
     
     void draw() {
-        ofSetColor(color.x, color.y, color.z);
+//        ofSetColor(color.x, color.y, color.z);
         sphere.draw();
     }
 private:
     ofVec3f position;
     ofVec3f color;
+    float gray;
     ofVec3f velocity;
     float radius;
     
@@ -72,14 +83,17 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     void createGBuffer();
+    void createRenderBuffer();
 		
-    ofShader gBufferShader, lightingShader, floorShader;
+    ofShader gBufferShader, lightingShader, floorShader, lightShader, renderShader;
     
-    unsigned int gBuffer;
-    unsigned int gPosition, gNormal, gColorSpec;
+    unsigned int gBuffer, renderBuffer;
+    unsigned int gPosition, gNormal, gColorSpec, gRender;
     
     ofVboMesh quad, vboMesh, floor;
     ofTexture normalMap;
+    
+    ofFbo gFbo, renderFbo, lightFbo;
     
     PointLight light[LIGHT_NUM];
 
@@ -93,5 +107,5 @@ class ofApp : public ofBaseApp{
     ofParameter<int> lightIndex;        // GLSL上での配列のdebug用
     ofParameter<float> lightAttenuation; // 距離減衰の減衰係数
     ofParameter<float> disCoef;
-    ofxToggle lightDebug, arrayDebug;
+    ofxToggle arrayDebug, isGray;
 };

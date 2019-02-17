@@ -1,91 +1,44 @@
 #include "ofApp.h"
 
-void ofApp::createGBuffer() {
-    glGenFramebuffers(1, &gBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-    
-    // position color buffer
-    glGenTextures(1, &gPosition);
-    glBindTexture(GL_TEXTURE_2D, gPosition);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, ofGetWidth(), ofGetHeight(), 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
-    
-    // normal color buffer
-    glGenTextures(1, &gNormal);
-    glBindTexture(GL_TEXTURE_2D, gNormal);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, ofGetWidth(), ofGetHeight(), 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-    
-    // position color buffer
-    glGenTextures(1, &gColorSpec);
-    glBindTexture(GL_TEXTURE_2D, gColorSpec);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, ofGetWidth(), ofGetHeight(), 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gColorSpec, 0);
-    
-    GLuint depthrenderbuffer;
-    glGenRenderbuffers(1, &depthrenderbuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ofGetWidth(), ofGetHeight());
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-    
-    unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
-    glDrawBuffers(3, attachments);
-    
-//    GLuint rboDepth;
-//    glGenRenderbuffers(1, &rboDepth);
-//    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-//    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ofGetWidth(), ofGetHeight());
-//    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-    
-//    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-//        std::cout << "Framebuffer not complete!" << std::endl;
-    
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofDisableArbTex();
     ofBackground(0);
     ofSetVerticalSync(true);
-    // gBuffer settings
-    createGBuffer();
     
     gBufferShader.load("shader/gBuffer.vert","shader/gBuffer.frag","shader/gBuffer.geom");
     lightingShader.load("shader/lighting.vert","shader/lighting.frag");
-//    floorShader.load("shader/floor.vert","shader/floor.frag","shader/floor.geom");
+    lightShader.load("shader/light.vert", "shader/light.frag");
     
+    ofDisableArbTex();
     ofLoadImage(normalMap, "image/normal.jpg");
     
-    for(int x=-2; x<=2; x++) {
-        for(int y=-2; y<=2; y++) {
-            for(int z=-2; z<=2; z++) {
-                int index = 25 * (x+2) + 5 * (y+2) + (z+2);
-                cout << index << endl;
-                float xPos = R * x;
-                float yPos = R * y - (R*2 + 10);
-                float zPos = R * z;
-                
-                pos[index] = ofVec3f(xPos,yPos,zPos);
-            }
-        }
-    }
+    pos[0] = ofVec3f(0, -R * 3, 0);
     
+//    for(int x=-2; x<=2; x++) {
+//        for(int y=-2; y<=2; y++) {
+//            for(int z=-2; z<=2; z++) {
+//                int index = 25 * (x+2) + 5 * (y+2) + (z+2);
+//                cout << index << endl;
+//                float xPos = R * x;
+//                float yPos = R * y - (R*2 + 10);
+//                float zPos = R * z;
+//
+//                pos[index] = ofVec3f(xPos,yPos,zPos);
+//            }
+//        }
+//    }
+//
     for(int i=0; i<LIGHT_NUM; i++) {
-        ofVec3f lightPos = ofVec3f(ofRandom(R*2), ofRandom(R*2+10), ofRandom(R*2));
+        ofVec3f lightPos = ofVec3f(ofRandom(R*3), ofRandom(R*3), ofRandom(R*3));
         light[i].setPosition(lightPos);
         light[i].setColor(ofRandom(1.0), ofRandom(1.0), ofRandom(1.0));
+        light[i].setGray(ofRandom(1.0));
         light[i].setRadius(lightPos.length());
     }
     
-    vboMesh = ofBoxPrimitive(BOX_SIZE, BOX_SIZE, BOX_SIZE).getMesh();
-    floor = ofPlanePrimitive(1000, 1000, 50, 50).getMesh();
+//    vboMesh = ofBoxPrimitive(BOX_SIZE, BOX_SIZE, BOX_SIZE).getMesh();
+    vboMesh = ofIcoSpherePrimitive(R*2, 2).getMesh();
+    floor = ofPlanePrimitive(1000, 1000, 20, 20).getMesh();
     
     quad.setMode(OF_PRIMITIVE_TRIANGLE_FAN);
     quad.addVertex(ofVec3f(ofGetWidth(), ofGetHeight(), 0.0));
@@ -100,28 +53,68 @@ void ofApp::setup(){
     gui.setup();
     gui.setPosition(10, 10);
     gui.add(debugMode.set("DebugMode", 0, 0, 3));
-    gui.add(lightDebug.setup("Light Debug", false));
     gui.add(arrayDebug.setup("Array Debug", false));
-    gui.add(lightDistance.set("Light Distance", 100.0, 1.0, 1000.0));
+    gui.add(isGray.setup("Is Gray", false));
     gui.add(lightIndex.set("Light Index", 0, 0, LIGHT_NUM - 1));
     gui.add(lightAttenuation.set("Attenuation", 0.005, 0.0, 0.15));
-    gui.add(disCoef.set("Distance Coefficient", 0.5, 0.0, 1.0));
+    gui.add(disCoef.set("Distance Coefficient", 0.2, 0.0, 1.0));
     
-//    cam.setupPerspective(false, 80, 0.1f, 100.0f);
-    cam.setDistance(200.0f);
+    lightFbo.allocate(ofGetWidth(), ofGetHeight());
+    
+    
+    // fbo setting
+    ofFbo::Settings gSettings;
+    gSettings.textureTarget = GL_TEXTURE_2D;
+    gSettings.width = ofGetWidth();
+    gSettings.height = ofGetHeight();
+    gSettings.internalformat = GL_RGB32F;
+    gSettings.useDepth = true;
+    gSettings.useStencil = true;
+    gSettings.depthStencilAsTexture = true;
+    gSettings.depthStencilInternalFormat = GL_DEPTH_COMPONENT; // depth
+    gSettings.maxFilter = GL_NEAREST;
+    gSettings.minFilter = GL_NEAREST;
+    gSettings.wrapModeVertical = GL_CLAMP_TO_EDGE;
+    gSettings.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
+    gFbo.allocate(gSettings);
+    
+    gFbo.createAndAttachTexture(GL_RGB32F, 1); // position
+    gFbo.createAndAttachTexture(GL_RGB32F, 2); // normal
+    gFbo.createAndAttachTexture(GL_RGB32F, 3); // color
+    gFbo.checkStatus();
+    
+    ofFbo::Settings rSettings; // render fbo settings
+    rSettings.textureTarget = GL_TEXTURE_2D;
+    rSettings.width = ofGetWidth();
+    rSettings.height = ofGetHeight();
+    rSettings.useDepth = true;
+    rSettings.useStencil = true;
+    rSettings.internalformat = GL_RGB32F;
+    rSettings.depthStencilAsTexture = true;
+    rSettings.depthStencilInternalFormat = GL_DEPTH_COMPONENT;
+    rSettings.maxFilter = GL_NEAREST;
+    rSettings.minFilter = GL_NEAREST;
+
+    rSettings.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
+    rSettings.wrapModeVertical = GL_CLAMP_TO_EDGE;
+    renderFbo.allocate(rSettings);
+    
+    renderFbo.createAndAttachTexture(GL_RGB32F, 1);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     float time = ofGetElapsedTimef();
+    int timeInt = (int)time;
+    float strength = 1.0;
     
     for(int i=0; i<LIGHT_NUM; i++) {
         ofVec3f vel = light[i].getVelocity();
         float r = light[i].getRadius();
-        light[i].setPosition(sin(time * vel.x) * r * 2,cos(time * vel.y) * r * 2 - R * 2, sin(time * vel.z) * r * 2);
+        light[i].setPosition(sin(time * vel.x) * r * 2,cos(time * vel.y) * r - R * 3, sin(time * vel.z) * r * 2);
     }
     
-    cam.setPosition(sin(time * .2) * R*8, -R*3, cos(time * .2) * R*8);
+    cam.setPosition(sin(time * 0.5 * strength) * R * 6, -R * 4, cos(time * .5 * strength) * R * 6);
     cam.lookAt(ofVec3f(0, -R * 2, 0));
     
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
@@ -129,16 +122,19 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    ofEnableDepthTest();
-    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    gFbo.begin();
+    gFbo.activateAllDrawBuffers();
+    ofEnableDepthTest(); // 深度テストを有効に
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     cam.begin();
     ofMatrix4x4 viewMatrix = ofGetCurrentViewMatrix();
     cam.end();
     
+    // gBufferに描画結果を格納する
     gBufferShader.begin();
+    ofMatrix4x4 projection = cam.getProjectionMatrix();
     gBufferShader.setUniformMatrix4f("view", viewMatrix);
-    gBufferShader.setUniformMatrix4f("projection", cam.getProjectionMatrix());
+    gBufferShader.setUniformMatrix4f("projection", projection);
     gBufferShader.setUniformTexture("normalMap", normalMap, 0);
     gBufferShader.setUniform1f("time", ofGetElapsedTimef());
     gBufferShader.setUniform1i("isBump", 1);
@@ -150,7 +146,6 @@ void ofApp::draw(){
         vboMesh.draw();
     }
     ofMatrix4x4 modelMatrix;
-//    modelMatrix.translate(0, 200, 0);
     modelMatrix.rotate(90,1,0,0);
     gBufferShader.setUniform1i("isBump", 0);
     gBufferShader.setUniformMatrix4f("model", modelMatrix);
@@ -158,25 +153,19 @@ void ofApp::draw(){
     
     floor.draw();
     
-//    for(int i=0; i<LIGHT_NUM; i++) {
-//        ofMatrix4x4 modelMatrix;
-//        modelMatrix.translate(light[i].getPosition());
-//        gBufferShader.setUniform1i("isBump", 0);
-//        gBufferShader.setUniformMatrix4f("model", modelMatrix);
-//        gBufferShader.setUniform3f("mColor", light[i].getColor());
-//        light[i].draw();
-//    }
-//
     gBufferShader.end();
     
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    gFbo.end();
     
-
-    // rendering
+    // ライティング処理部分
+    renderFbo.begin();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     lightingShader.begin();
-    lightingShader.setUniformTexture("gPosition", GL_TEXTURE_2D, gPosition, 0);
-    lightingShader.setUniformTexture("gNormal", GL_TEXTURE_2D, gNormal, 1);
-    lightingShader.setUniformTexture("gColorSpec", GL_TEXTURE_2D, gColorSpec, 2);
+    ofMatrix4x4 model;
+    model.translate(0, 0, 0);
+    lightingShader.setUniformTexture("gPosition", gFbo.getTexture(0), 0);
+    lightingShader.setUniformTexture("gNormal", gFbo.getTexture(1), 1);
+    lightingShader.setUniformTexture("gColorSpec", gFbo.getTexture(2), 2);
     lightingShader.setUniform3f("viewPos", cam.getPosition());
     lightingShader.setUniform1i("debugMode", debugMode);
     lightingShader.setUniform1f("lightDistance", lightDistance);
@@ -189,15 +178,53 @@ void ofApp::draw(){
         modelMatrix.translate(light[i].getPosition());
         ofVec3f lightPos = light[i].getPosition() * viewMatrix;
         lightingShader.setUniform3fv("light["+to_string(i)+"].position", &lightPos[0], 1);
-        lightingShader.setUniform3fv("light["+to_string(i)+"].color", &light[i].getColor()[0], 1);
+        if(isGray){
+            ofVec3f grayColor = ofVec3f(light[i].getGray());
+            lightingShader.setUniform3fv("light["+to_string(i)+"].color", &grayColor[0], 1);
+        } else {
+            lightingShader.setUniform3fv("light["+to_string(i)+"].color", &light[i].getColor()[0], 1);
+        }
     }
     quad.draw(OF_MESH_FILL);
     lightingShader.end();
-
-    ofDrawBitmapString("debugMode: " + ofToString(debugMode), 10, 10);
-//    glBindTexture(GL_TEXTURE_2D, gPosition);
-//    quad.draw(OF_MESH_FILL);
+    renderFbo.end();
+    
+    // pointLight描画部分
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, gFbo.getId());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, renderFbo.getIdDrawBuffer()); // write to default framebuffer
+    glBlitFramebuffer(
+                      0, 0, ofGetWidth(), ofGetHeight(), 0, 0, ofGetWidth(), ofGetHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST
+                      );
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    renderFbo.begin();
+    ofEnableSmoothing();
+    lightShader.begin();
+    lightShader.setUniformMatrix4f("projection", projection);
+    lightShader.setUniformMatrix4f("view", viewMatrix);
+    for(int i=0; i<LIGHT_NUM; i++) {
+        ofMatrix4x4 modelMatrix;
+        modelMatrix.translate(light[i].getPosition());
+//        lightShader.setUniform3f("lightColor", light[i].getColor());
+        if(isGray){
+            ofVec3f grayColor = ofVec3f(light[i].getGray());
+            lightShader.setUniform3f("lightColor", grayColor);
+        } else {
+            lightShader.setUniform3f("lightColor", light[i].getColor());
+        }
+        lightShader.setUniformMatrix4f("model", modelMatrix);
+        light[i].draw();
+    }
+    lightShader.end();
+    renderFbo.end();
+    
     ofDisableDepthTest();
+    
+    renderFbo.draw(0, 0, renderFbo.getWidth(), renderFbo.getHeight());
+    
+    lightFbo.draw(300, 10, lightFbo.getWidth() * 0.1,lightFbo.getHeight() * 0.1);
+
+    ofDrawBitmapString("debugMode: " + ofToString(cam.getPosition()), 10, 10);
     gui.draw();
     
 }
