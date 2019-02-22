@@ -6,6 +6,9 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
     
     gBufferShader.load("shader/gBuffer.vert","shader/gBuffer.frag","shader/gBuffer.geom");
+    gBufferShader.setGeometryInputType(GL_TRIANGLES);
+    gBufferShader.setGeometryOutputType(GL_TRIANGLE_STRIP);
+    gBufferShader.setGeometryOutputCount(6);
     lightingShader.load("shader/lighting.vert","shader/lighting.frag");
     lightShader.load("shader/light.vert", "shader/light.frag");
     
@@ -105,7 +108,6 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     float time = ofGetElapsedTimef();
-    int timeInt = (int)time;
     float strength = 1.0;
     
     for(int i=0; i<LIGHT_NUM; i++) {
@@ -114,7 +116,7 @@ void ofApp::update(){
         light[i].setPosition(sin(time * vel.x) * r * 2,cos(time * vel.y) * r - R * 3, sin(time * vel.z) * r * 2);
     }
     
-    cam.setPosition(sin(time * 0.5 * strength) * R * 6, -R * 4, cos(time * .5 * strength) * R * 6);
+    cam.setPosition(sin(time * 0.5 * strength) * R * 8, -R * 8, cos(time * 0.5 * strength) * R * 8);
     cam.lookAt(ofVec3f(0, -R * 2, 0));
     
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
@@ -149,7 +151,7 @@ void ofApp::draw(){
     modelMatrix.rotate(90,1,0,0);
     gBufferShader.setUniform1i("isBump", 0);
     gBufferShader.setUniformMatrix4f("model", modelMatrix);
-    gBufferShader.setUniform3f("mColor", 1.0, 1.0, 1.0);
+    gBufferShader.setUniform3f("mColor", 0.5, 0.5, 1.0);
     
     floor.draw();
     

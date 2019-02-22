@@ -9,6 +9,7 @@ layout(location = 2) out vec4 gColorSpec;
 in vec2 vTexCoord;
 in vec3 vPosition;
 in vec3 vNormal;
+in vec3 vColor;
 
 uniform sampler2D normalMap;
 uniform int isBump;
@@ -19,9 +20,9 @@ void main() {
     if(isBump == 1) {
         gNormal = texture(normalMap, vTexCoord);
         // gNormal = vec4(vNormal, 1.0);
-        gColorSpec = vec4(vec3(.0), 1.0);
+        gColorSpec = vec4(vColor, 1.0);
     } else {
         gNormal = vec4(vNormal, 1.0);
-        gColorSpec = vec4(mColor, 0.0);        
+        gColorSpec = vec4(vColor, 1.0);        
     }
 }
