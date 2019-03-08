@@ -4,20 +4,11 @@
 
 struct pingPongBuffer {
 public:
-    void allocate(int _width, int _height, int _internalformat = GL_RGBA, int _numColorBuffers = 1) {
-        ofFbo::Settings fboSettings;
-        fboSettings.width = _width;
-        fboSettings.height = _height;
-        fboSettings.numColorBuffers = _numColorBuffers;
-        fboSettings.useDepth = false;
-        fboSettings.internalformat = _internalformat;
-        fboSettings.wrapModeHorizontal = GL_CLAMP_TO_EDGE;
-        fboSettings.wrapModeVertical = GL_CLAMP_TO_EDGE;
-        fboSettings.minFilter = GL_NEAREST;
-        fboSettings.maxFilter = GL_NEAREST;
+    void allocate(int _width, int _height, int _internalformat = GL_RGBA) {
         
         for(int i = 0; i < 2; i++) {
-            FBOs[i].allocate(fboSettings);
+            FBOs[i].allocate(_width, _height, _internalformat);
+            FBOs[i].getTexture().setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
         }
         
         src = &FBOs[0];
@@ -44,7 +35,7 @@ public:
     
 private:
     ofFbo FBOs[2]; // real addresses of ping/pong
-}
+};
 
 class ofApp : public ofBaseApp{
 
@@ -65,14 +56,12 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-    ofShader trail;
-    
     int trailLength, numTrail;
-    pingPongBuffer posPingPong;
+    pingPongBuffer posPingPong, velPingPong;
     
     ofEasyCam cam;
     
-    ofVboMesh trailVerices;
+    ofVboMesh trailVertices;
     ofShader updatePos, updateVel, createTrail, render;
     
     
