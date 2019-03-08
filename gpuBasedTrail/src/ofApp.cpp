@@ -61,7 +61,7 @@ void ofApp::setup(){
 void ofApp::update(){
     float time = ofGetElapsedTimef();
     
-    // 速度ピンポン
+    // ========== 速度ピンポン ==========
     // 速度更新
     velPingPong.dst->begin();
     ofClear(0);
@@ -84,7 +84,7 @@ void ofApp::update(){
     
     velPingPong.swap();
     
-    // 頂点ピンポン
+    // ========== 頂点ピンポン ==========
     // 頂点更新
     posPingPong.dst->begin();
     ofClear(0);
