@@ -38,7 +38,7 @@ void ofApp::setup(){
     
     cam.setupPerspective();
     
-    numParticles = 600 * 600;
+    numParticles = 25 * 25;
     
     // アップデート用シェーダ
     updatePos.load("shader/passthru.vert", "shader/posUpdate.frag");
@@ -56,7 +56,6 @@ void ofApp::setup(){
     numParticles = texRes * texRes;
     
     // particleの設定
-    particles.setMode(OF_PRIMITIVE_POINTS);
     for(int x = 0; x < texRes; x++) {
         for(int y = 0; y < texRes; y++) {
             int index = texRes * y + x;
@@ -158,10 +157,6 @@ void ofApp::update(){
     ofEnableBlendMode(OF_BLENDMODE_ADD);
     ofBackground(0, 0, 0, 50);
     
-    float radius = 700.0;
-        cam.setPosition(sin(time)*cos(TWO_PI)*radius, sin(time)*sin(TWO_PI)*radius, cos(time)*radius);
-        cam.lookAt(glm::vec3(0.0, 0.0, 0.0));
-    
     cam.begin();
     
     ofPushMatrix();
@@ -170,7 +165,7 @@ void ofApp::update(){
     
     render.setUniformTexture("posAndAgeTex", posPingPong.src->getTexture(0), 0);
     render.setUniform1f("time", ofGetElapsedTimef());
-    particles.draw();
+    particles.draw(OF_MESH_WIREFRAME);
     
     render.end();
     

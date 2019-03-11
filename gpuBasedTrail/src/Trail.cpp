@@ -68,6 +68,9 @@ void Trail::draw(ofPolyRenderMode mode) {
     render.setUniform1i("numTrail", num);
     render.setUniform1i("trailLength", length);
     render.setUniform1f("trailWidth", width);
+    render.setUniform1f("size", size);
+    render.setUniform3f("camPos", camPos);
+    render.setUniform1f("time", ofGetElapsedTimef());
     render.setUniform2f("texSize", (float)length, (float)num);
     mesh.drawInstanced(mode, num);
     render.end();
@@ -100,6 +103,7 @@ void Trail::update() {
     posBuffer.dst->begin();
     ofClear(0);
     updatePos.begin();
+    updatePos.setUniform1f("speed", speed);
     updatePos.setUniformTexture("posTex", posBuffer.src->getTexture(), 0);
     updatePos.setUniformTexture("velTex", velBuffer.src->getTexture(), 1);
     

@@ -36,28 +36,24 @@ void main() {
   // パーティクルの生存期間が切れたら初期化
   if(age >= maxAge) {
     age = 0;
-    maxAge = 60.0 + random(pos.xx)*60.0;
+    maxAge = 60.0 + random(pos.xx) * 60.0;
     float mode = floor(mod(time+pos.x, 2.0));
-    float posR = 200.0;
-    if(mode == 1.0) posR = radius;
-    // maxAge = 60.0 + random(pos.xx) * 60.0;
     float theta = 2.0 * PI * random(pos.yy);
     float phi = PI * random(pos.zz);
     float r = 5.0 * random(pos.xy);
     vec3 startPos;
-    // if(mode == 0.0) {
-    //   startPos = vec3(clamp(pos.x, -200.0, 200.0), clamp(pos.y, -200.0, 200.0), 0.0);
-    // } else if(mode == 1.0) {
-    //   float radius = 200.0;
-    //   startPos = vec3(sin(vTexCoord.x)*radius, cos(vTexCoord.x)*radius, random(pos.zx)*30.0);
-    // } else if(mode==2.0) {
-    //   startPos = vec3(sin(vTexCoord.x)*50.0, sin(vTexCoord.y)*600.0, 0.0);
-    // } else if(mode==3.0) {
-    //   startPos = vec3(sin(vTexCoord.x)*cos(vTexCoord.y)*200.0, sin(vTexCoord.x)*sin(vTexCoord.y)*200.0, cos(vTexCoord.x));
-    // } else if(mode==4.0) {
-    //   startPos = vec3(sin(vTexCoord.x)*800.0, sin(vTexCoord.y)*50.0, random(pos.zx)*30.0);
-    // }
-    startPos = vec3(sin(vTexCoord.x)*cos(vTexCoord.y)*posR, sin(vTexCoord.x)*sin(vTexCoord.y)*posR, cos(vTexCoord.x)*posR);
+    if(mode == 0.0) {
+      startPos = vec3(clamp(pos.x, -200.0, 200.0), clamp(pos.y, -200.0, 200.0), 0.0);
+    } else if(mode == 1.0) {
+      float radius = 200.0;
+      startPos = vec3(sin(vTexCoord.x)*radius, cos(vTexCoord.x)*radius, random(pos.zx)*30.0);
+    } else if(mode==2.0) {
+      startPos = vec3(sin(vTexCoord.x)*50.0, sin(vTexCoord.y)*600.0, 0.0);
+    } else if(mode==3.0) {
+      startPos = vec3(sin(vTexCoord.x)*cos(vTexCoord.y)*200.0, sin(vTexCoord.x)*sin(vTexCoord.y)*200.0, cos(vTexCoord.x));
+    } else if(mode==4.0) {
+      startPos = vec3(sin(vTexCoord.x)*800.0, sin(vTexCoord.y)*50.0, random(pos.zx)*30.0);
+    }
     pos = startPos + vec3(r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta));
     vel.xyz = normalize(startPos);
   }

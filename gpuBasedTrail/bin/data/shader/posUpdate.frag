@@ -3,6 +3,7 @@ precision mediump float;
 
 uniform sampler2DRect posTex;
 uniform sampler2DRect velTex;
+uniform float speed;
 
 in vec2 vTexCoord;
 
@@ -17,7 +18,7 @@ void main() {
         pos = texture(posTex, vTexCoord).xyz;
         vec3 vel = texture(velTex, vTexCoord).xyz;
 
-        pos += vel * 0.03;
+        pos += vel * 0.01 * speed;
     } else {
         vec2 uv = vTexCoord - vec2(1.0, 0.0);
         pos = texture(posTex, uv).xyz;

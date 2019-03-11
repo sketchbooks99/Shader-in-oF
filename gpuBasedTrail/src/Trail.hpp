@@ -53,20 +53,21 @@ public:
     void debugTexture(int x, int y);
     void update();
     
-    void loadVelocityShader(std::string frag, std::string vert) {
-        updateVel.load(frag, vert);
+    void loadVelocityShader(std::string vert, std::string frag) {
+        updateVel.load(vert, frag);
     }
     
-    void loadPositionShader(std::string frag, std::string vert) {
-        updatePos.load(frag, vert);
+    void loadPositionShader(std::string vert, std::string frag) {
+        updatePos.load(vert, frag);
     }
     
-    void loadRenderShader(std::string frag, std::string vert) {
-        render.load(frag, vert);
+    void loadRenderShader(std::string vert, std::string frag) {
+        render.load(vert, frag);
     }
     
-    void loadRenderShader(std::string frag, std::string vert, std::string geom) {
-        render.load(frag, vert, geom);
+    void loadRenderShader(std::string vert, std::string frag, std::string geom)
+    {
+        render.load(vert, frag, geom);
     }
     
     int getLength() { return length; }
@@ -75,12 +76,19 @@ public:
     void setWidth(float _width) { width = _width; }
     float getWidth() { return width; }
     
+    void setUniforms(ofVec3f _camPos, float _speed, float _size) {
+        camPos = _camPos;
+        speed = _speed;
+        size = _size;
+    }
+    
 private:
-    float num, length, width;
+    float num, length, width, speed, size;
     ofFloatColor color;
     pingPongBuffer velBuffer, posBuffer;
     ofVboMesh mesh;
     ofShader render, updateVel, updatePos;
+    ofVec3f camPos;
 };
 
 #endif /* Trail_hpp */
