@@ -1,25 +1,40 @@
 #version 150
 
-uniform sampler2D velTex;
-uniform sampler2D posTex;
+uniform sampler2DRect posTex;
+uniform int trailLength;
 uniform mat4 modelViewProjectionMatrix;
+uniform vec3 camPos;
+uniform float trailWidth;
 
-layout(points) in
-layout(triangle_strip, maxvertices = 4) out;
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 22) out;
 
 in Vertex {
-    vec4 position;
-    vec3 normal;
+    vec3 pos;
+    int id;
     vec2 texcoord;
-    vec4 color;
 } vertex[];
 
-out vec3 vNormal;
-out vec2 vTexCoord;
-out vec4 vColor;
+out float trailId;
 
 void main() {
-    int id = gl_InstanceID;
-    int vertId = gl_VertexID;
+    trailId = float(vertex[0].id);
+    // vec3 dir = vertex[0].dir;
+    // vec3 toCamDir = normalize(camPos - dir);
+    // vec3 sideDir = normalize(cross(toCamDir, dir));
+    float width = trailWidth * 0.5;
 
+    for(int i=0; i<trailLength; i++) {
+        vec3 pos = texture(posTex, vertex[0].texcoord + vec2(float(i), 0.0)).xyz * 100.0;
+        gl_Position = modelViewProjectionMatrix * vec4(pos + width, 1.0);
+        EmitVertex();
+        gl_Position = modelViewProjectionMatrix * vec4(pos - width, 1.0);
+        EmitVertex();   
+    }
+    // gl_Position = modelViewProjectionMatrix * vec4(posNext + width, 1.0);
+    // EmitVertex();
+    // gl_Position = modelViewProjectionMatrix * vec4(posNext - width, 1.0);
+    // EmitVertex();
+
+    EndPrimitive();
 }

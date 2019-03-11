@@ -14,9 +14,9 @@ out vec4 fragColor;
 
 vec3 curlNoise(vec3 p, float id) {
     return vec3(
-        snoise(vec4(0.1 * p, 7.225 + time * 0.5)),
-        snoise(vec4(0.1 * p, 3.552 + time * 0.5)),
-        snoise(vec4(0.1 * p, 1.259 + time * 0.5))
+        snoise(vec4(0.15 * p, 7.225 + time * 0.1)),
+        snoise(vec4(0.15 * p, 3.552 + time * 0.1)),
+        snoise(vec4(0.15 * p, 1.259 + time * 0.1))
     );
 }
 
@@ -27,8 +27,8 @@ void main() {
     vec3 pos = texture(posTex, vTexCoord).xyz;
     vec3 vel = texture(prevVelTex, vTexCoord).xyz;
 
-    vel += 50.0 * curlNoise(pos, id) * 0.2;
-    vel += -pos * length(pos) * 0.1;
+    vel += 40.0 * curlNoise(pos, id) * 0.2;
+    vel += -pos * length(pos) * 0.05;
     vel *= 0.9 + abs(sin(vTexCoord.y * 9.0)) * 0.03;
 
     fragColor = vec4(vel, 1.0);
