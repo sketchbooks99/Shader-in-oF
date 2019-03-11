@@ -61,7 +61,7 @@ class ofApp : public ofBaseApp{
     
     ofEasyCam cam;
     
-    ofVboMesh trailVertices;
+    ofVboMesh trailMeshes;
     ofShader updatePos, updateVel, createTrail, render;
     
     
