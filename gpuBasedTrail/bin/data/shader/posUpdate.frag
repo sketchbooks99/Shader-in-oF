@@ -1,8 +1,8 @@
 #version 150
 precision mediump float;
 
-uniform sampler2D posTex;
-uniform sampler2D velTex;
+uniform sampler2DRect posTex;
+uniform sampler2DRect velTex;
 
 in vec2 vTexCoord;
 
@@ -12,14 +12,14 @@ void main() {
     // vec3 pos = texture(posTex, vTexCoord).xyz;
     // vec3 pos = texture(velTex, vTexCoord).xyz;
 
-    vec3 pos;
-    if(vTexCoord.x >= 1.0) {
+    vec3 pos = vec3(1.0);
+    if(vTexCoord.x <= 1.0) {
         pos = texture(posTex, vTexCoord).xyz;
         vec3 vel = texture(velTex, vTexCoord).xyz;
 
-        pos += vel;
+        pos += vel * 0.03;
     } else {
-        vec2 uv = vTexCoord + vec2(1.0, 0.0);
+        vec2 uv = vTexCoord - vec2(1.0, 0.0);
         pos = texture(posTex, uv).xyz;
     }
     fragColor = vec4(pos, 1.0);

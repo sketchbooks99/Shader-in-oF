@@ -4,8 +4,9 @@
 void ofApp::setup(){
     ofBackground(0);
     ofSetVerticalSync(true);
+    ofSetFrameRate(60);
     
-    numTrail = 10000;
+    numTrail = 4096;
     trailLength = 10;
     updatePos.load("shader/passthru.vert", "shader/posUpdate.frag");
     updateVel.load("shader/passthru.vert", "shader/velUpdate.frag");
@@ -32,7 +33,7 @@ void ofApp::setup(){
 //    }
     
     // パーティクルの位置設定
-    float * pos = new float[trailLength * numTrail * 4];
+    vector<float> pos(trailLength * numTrail * 4);
     for(int x = 0; x < trailLength; x++) {
         for(int y = 0; y < numTrail; y++) {
             int index = trailLength * y + x;
@@ -44,12 +45,11 @@ void ofApp::setup(){
     }
     // pingPongBufferに初期値(位置)を書き込み
     posPingPong.allocate(trailLength, numTrail, GL_RGBA32F);
-    posPingPong.src->getTexture().loadData(pos, trailLength, numTrail, GL_RGBA);
-    posPingPong.dst->getTexture().loadData(pos, trailLength, numTrail, GL_RGBA);
-    delete[] pos;
+    posPingPong.src->getTexture().loadData(pos.data(), trailLength, numTrail, GL_RGBA);
+    posPingPong.dst->getTexture().loadData(pos.data(), trailLength, numTrail, GL_RGBA);
     
-    // パーティクルの速度設定(全て0)
-    float * vel = new float[trailLength * numTrail * 4];
+    // パーティクルの速度設定(全て
+    vector<float> vel(trailLength * numTrail * 4);
     for(int x = 0; x < trailLength; x++) {
         for(int y = 0; y < numTrail; y++) {
             int index = trailLength * y + x;
@@ -61,9 +61,8 @@ void ofApp::setup(){
     }
     // pingPongBufferに初期値(速度)を書き込み
     velPingPong.allocate(trailLength, numTrail, GL_RGBA32F);
-    velPingPong.src->getTexture().loadData(vel, trailLength, numTrail, GL_RGBA);
-    velPingPong.dst->getTexture().loadData(vel, trailLength, numTrail, GL_RGBA);
-    delete[] vel;
+    velPingPong.src->getTexture().loadData(vel.data(), trailLength, numTrail, GL_RGBA);
+    velPingPong.dst->getTexture().loadData(vel.data(), trailLength, numTrail, GL_RGBA);
 }
 
 //--------------------------------------------------------------
@@ -72,63 +71,67 @@ void ofApp::update(){
     
     // ========== 速度ピンポン ==========
     // 速度更新
-//    velPingPong.dst->begin();
-//    ofClear(0);
-//    updateVel.begin();
-//    // １フレーム前の速度情報
-//    updateVel.setUniformTexture("prevVelTex", velPingPong.src->getTexture(), 0);
-//    // 頂点情報
-//    updateVel.setUniformTexture("posTex", posPingPong.src->getTexture(), 1);
-//    // 各種Uniform変数
-//    updateVel.setUniform1f("time", time);
-//    updateVel.setUniform1f("timestep", 0.005f);
-//
-//    // 更新された速度情報をテクスチャに書き込む
-//    velPingPong.src->draw(0, 0);
-//
-//    updateVel.end();
-//    velPingPong.dst->end();
-//
-//    velPingPong.swap();
-//
+    velPingPong.dst->begin();
+    ofClear(0);
+    updateVel.begin();
+    // １フレーム前の速度情報
+    updateVel.setUniformTexture("prevVelTex", velPingPong.src->getTexture(), 0);
+    // 頂点情報
+    updateVel.setUniformTexture("posTex", posPingPong.src->getTexture(), 1);
+    // 各種Uniform変数
+    updateVel.setUniform1f("time", time);
+    updateVel.setUniform1f("timestep", 0.005f);
+
+    // 更新された速度情報をテクスチャに書き込む
+    velPingPong.src->draw(0, 0);
+
+    updateVel.end();
+    velPingPong.dst->end();
+
+    velPingPong.swap();
+
 //    // ========== 頂点ピンポン ==========
 //    // 頂点更新
-//    posPingPong.dst->begin();
-//    ofClear(0);
-//    updatePos.begin();
-//    updatePos.setUniformTexture("posTex", posPingPong.src->getTexture(), 0);
-//    updatePos.setUniformTexture("velTex", velPingPong.src->getTexture(), 1);
-//
-//    posPingPong.src->draw(0, 0);
-//
-//    updatePos.end();
-//    posPingPong.dst->end();
-//
-//    posPingPong.swap();
+    posPingPong.dst->begin();
+    ofClear(0);
+    updatePos.begin();
+    updatePos.setUniformTexture("posTex", posPingPong.src->getTexture(), 0);
+    updatePos.setUniformTexture("velTex", velPingPong.src->getTexture(), 1);
+
+    posPingPong.src->draw(0, 0);
+
+    updatePos.end();
+    posPingPong.dst->end();
+
+    posPingPong.swap();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     // trail rendering using posTex
     ofEnableDepthTest();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
     
     cam.begin();
     
     createTrail.begin();
     createTrail.setUniformTexture("posTex", posPingPong.src->getTexture(), 0);
     createTrail.setUniformTexture("velTex", velPingPong.src->getTexture(), 1);
+    createTrail.setUniform1i("numTrail", numTrail);
     createTrail.setUniform2f("texSize", (float)trailLength, (float)numTrail);
     
-    trailMeshes.drawInstanced(OF_MESH_POINTS, numTrail);
+    trailMeshes.drawInstanced(OF_MESH_FILL, numTrail);
     
     createTrail.end();
     
     cam.end();
     
     ofDisableDepthTest();
+    ofDisableBlendMode();
     
-    posPingPong.src->draw(10, 10, posPingPong.src->getWidth(), posPingPong.src->getHeight() * 0.05);
-    velPingPong.src->draw(20, 10, velPingPong.src->getWidth(), velPingPong.src->getHeight() * 0.05);
+    posPingPong.src->draw(0, 10, posPingPong.src->getWidth(), posPingPong.src->getHeight() * 0.1);
+    velPingPong.src->draw(20, 10, velPingPong.src->getWidth(), velPingPong.src->getHeight() * 0.1);
+//    velPingPong.src->draw(0, 0, ofGetWidth(), ofGetHeight());
 }
 
 //--------------------------------------------------------------
