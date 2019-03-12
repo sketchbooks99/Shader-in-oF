@@ -39,9 +39,6 @@ vec3 rand3d(vec3 p) {
 
 void main() {
     trailId = float(vertex[0].id);
-    // vec3 dir = 
-    // vec3 toCamDir = normalize(camPos - dir);
-    // vec3 sideDir = normalize(cross(toCamDir, dir));
     float width = trailWidth * 0.5;
 
     for(int i=0; i<trailLength; i++) {
@@ -53,16 +50,13 @@ void main() {
             vec3 toCamDir = normalize(camPos - dir);
             sideDir = normalize(cross(toCamDir, dir));
         }
-        vColor = (vertex[0].id % 4 == 0) ? vec4(0.3, 0.0, 0.0, 1.0) : vec4(vec3(0.0), 0.7);
+        vColor = (vertex[0].id % 5 == 0) ? vec4(0.0, 0.2, 0.3, 1.0) : vec4(vec3(0.0), 0.7);
+        // vColor = vec4(vec3(0.0), 0.5);
         gl_Position = modelViewProjectionMatrix * vec4(pos + sideDir * width, 1.0);
         EmitVertex();
         gl_Position = modelViewProjectionMatrix * vec4(pos - sideDir * width, 1.0);
         EmitVertex();   
     }
-    // gl_Position = modelViewProjectionMatrix * vec4(posNext + width, 1.0);
-    // EmitVertex();
-    // gl_Position = modelViewProjectionMatrix * vec4(posNext - width, 1.0);
-    // EmitVertex();
 
     EndPrimitive();
 }

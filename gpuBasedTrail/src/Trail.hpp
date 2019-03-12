@@ -82,6 +82,15 @@ public:
         size = _size;
     }
     
+    void createMesh(int _length) {
+        mesh.clear();
+        for(int i=0; i<_length; i++) {
+            mesh.addVertex(ofVec3f(0, 0, 0));
+            mesh.addTexCoord(ofVec2f(i, 0));
+            mesh.addColor(ofFloatColor(1,1,1,1));
+        }
+    }
+    
 private:
     float num, length, width, speed, size;
     ofFloatColor color;

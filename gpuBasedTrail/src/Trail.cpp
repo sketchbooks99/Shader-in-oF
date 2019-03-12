@@ -10,12 +10,6 @@
 void Trail::init(int _num, int _length) {
     num = _num;
     length = _length;
-    
-    for(int i=0; i<length; i++) {
-        mesh.addVertex(ofVec3f(0, 0, 0));
-        mesh.addTexCoord(ofVec2f(i, 0));
-        mesh.addColor(ofFloatColor(1,1,1,1));
-    }
 }
 
 //--------------------------------------------------------------

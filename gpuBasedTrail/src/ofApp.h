@@ -42,6 +42,7 @@ class ofApp : public ofBaseApp{
     ofParameter<float> size;
     ofParameter<float> blurSize;
     ofParameter<float> blurStrength;
+    ofParameter<float> camRadius;
     bool isGui = true, isSpeedUp = true;
     
     

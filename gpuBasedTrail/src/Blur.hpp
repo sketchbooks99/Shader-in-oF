@@ -23,7 +23,7 @@ public:
     void begin() {
         target.begin();
         ofClear(0);
-        ofBackground(100);
+        ofBackground(0);
     }
     
     void end() {

@@ -3,14 +3,15 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetVerticalSync(true);
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     ofEnableAlphaBlending();
     ofEnableSmoothing();
     
     numTrail = 8192;
-    trailLength = 5;
+    trailLength = 10;
     
     trail.init(numTrail, trailLength);
+    trail.createMesh(trail.getLength());
     trail.createBuffers(trail.getNum(), trail.getLength());
     trail.loadVelocityShader("shader/passthru.vert", "shader/velUpdate.frag");
     trail.loadPositionShader("shader/passthru.vert", "shader/posUpdate.frag");
@@ -20,7 +21,7 @@ void ofApp::setup(){
 
     mesh = ofSpherePrimitive(300, 32).getMesh();
     for(int i=0; i<mesh.getVertices().size(); i++) {
-        mesh.addColor(ofFloatColor(0.0, 0.0, 0.0, 1.0));
+        mesh.addColor(ofFloatColor(0.5,0.5, 0.5, 1.0));
     }
     
     blur.allocate(ofGetWidth(), ofGetHeight());
@@ -35,6 +36,7 @@ void ofApp::setup(){
     gui.add(size.set("Size",100.0, 50.0, 200.0));
     gui.add(blurSize.set("BlurSize", 10.0, 1.0, 20.0));
     gui.add(blurStrength.set("BlurStrength", 2.5, 0.1, 5.0));
+    gui.add(camRadius.set("CamRadius", 1500.0, 500.0, 3000.0));
     
     // sound
 //    soundStream.printDeviceList();
@@ -72,17 +74,11 @@ void ofApp::update(){
     trail.setWidth(trailWidth);
     trail.update();
     
-    if(isSpeedUp) {
-        if(speed < 3.0) speed += 0.1;
-    } else {
-        if(speed > 0.1) speed -= 0.1;
-    }
-    
     blur.setSize(blurSize);
     blur.setStrength(blurStrength);
     
     float time = ofGetElapsedTimef();
-    cam.setPosition(sin(time * 0.5) * 1500.0, sin(time * 0.5) * 500.0, cos(time * 0.5) * 1500.0);
+    cam.setPosition(sin(time * 0.5) * camRadius, sin(time * 0.5) * 500.0, cos(time * 0.5) * camRadius);
     cam.lookAt(ofVec3f(0, 0, 0));
     
     blur.begin();
@@ -140,9 +136,6 @@ void ofApp::keyPressed(int key){
     switch(key) {
         case 'g':
             isGui = !isGui;
-            break;
-        case 'u':
-            isSpeedUp = !isSpeedUp;
             break;
     }
 }
