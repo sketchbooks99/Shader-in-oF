@@ -1,1 +1,14 @@
 *.app
+*.exe
+.vs/
+v16/
+*.sln
+ipch/
+*.ipch
+Debug/
+Release/
+x64/
+*.lib
+*.ilk
+.DS_Store
+
